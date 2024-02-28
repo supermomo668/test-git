@@ -48,24 +48,21 @@ jobs:
           )
           echo "AGENT_RESPONSE=$AGENT_RESPONSE" >> $GITHUB_ENV
           
-
-      - name: Post response as issue comment
+      - name: Post GitHub Comment
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            / const jsonString = `${{ toJson(env.AGENT_RESPONSE) }}`;
-            const agentResponse = JSON.parse(jsonString);
+            const issueNumber = parseInt('${{ github.event.inputs.issueNumber }}', 10);
+            const commentBody = "This is a comment made by a script 🤖";
             
-            // Use agentResponse as a JavaScript object
-            console.log(agentResponse); // Example usage
+            console.log("Owner:"+context.repo.owner+"\nRepo:"+context.repo.repo)
             
-            // Assuming agentResponse has a 'message' property
-            const commentBody = `Response from API: ${agentResponse.message}`;
-            
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: commentBody
+              issue_number: issueNumber,
+              body: commentBody,
             });
+            
+            console.log("Comment posted successfully.");
