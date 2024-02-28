@@ -55,9 +55,8 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const issue_number = ${{ github.event.issue.number }};
-            const responseObj = JSON.parse(agentResponse);
-            // Construct the comment body using the parsed object. Adjust formatting as needed.
-            const commentBody = `Response from API: ${responseObj.response}\n\nContext:\n${responseObj.context.join('\n')}`;
+            const agentResponse = JSON.parse('${{ env.AGENT_RESPONSE }}'.replace(/\n/g, "\\n"));
+            const commentBody = `Response from API: ${agentResponse.response}\n\nContext: ${agentResponse.context.join('\n')}`;
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
