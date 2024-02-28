@@ -1,22 +1,35 @@
-name: Extract Issue Comment Text
+name: Issue and Comment Monitor
 
 on:
   issues:
-    types: [opened, reopened, edited]  # Trigger when a new issue is created or an existing one is reopened or edited
+    types: [opened, edited]
   issue_comment:
-    types: [created]  # Trigger when a new comment is added to an issue
+    types: [created]
 
 jobs:
-  extract-comment-text:
+  extract-issue-info:
+    name: Extract Issue Information
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Extract Issue Comment Text
-        id: extract_comment
-        run: echo "::set-output name=comment::${{ github.event.comment.body }}"
-
-      - name: Use Comment Text
+      - name: Extract Issue Information
+        id: extract_info
         run: |
-          echo "Extracted Comment: ${{ steps.extract_comment.outputs.comment }}"
+          # Check if the event is triggered by a new issue or a new comment
+          if [ "${{ github.event_name }}" == "issues" ]; then
+            title=$(jq -r '.issue.title' <<< "${{ toJson(github.event.issue) }}")
+            body=$(jq -r '.issue.body' <<< "${{ toJson(github.event.issue) }}")
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            title=$(jq -r '.issue.title' <<< "${{ toJson(github.event.issue) }}")
+            body=$(jq -r '.comment.body' <<< "${{ toJson(github.event.comment) }}")
+          fi
+          echo "::set-output name=title::$title"
+          echo "::set-output name=body::$body"
+
+      - name: Print Issue Information
+        run: |
+          echo "Title: ${{ steps.extract_info.outputs.title }}"
+          echo "Body: ${{ steps.extract_info.outputs.body }}"
