@@ -23,6 +23,7 @@ jobs:
           fi
           ISSUE_CONTENT="Title:${TITLE}\nBody:${Body}"
           ISSUE_CONTENT=$(echo -e $ISSUE_CONTENT | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo $ISSUE_CONTENT
           echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Send GET request including latest comment or issue body
