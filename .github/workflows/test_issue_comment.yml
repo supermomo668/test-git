@@ -1,0 +1,22 @@
+name: Extract Issue Comment Text
+
+on:
+  issues:
+    types: [opened, reopened, edited]  # Trigger when a new issue is created or an existing one is reopened or edited
+  issue_comment:
+    types: [created]  # Trigger when a new comment is added to an issue
+
+jobs:
+  extract-comment-text:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract Issue Comment Text
+        id: extract_comment
+        run: echo "::set-output name=comment::${{ github.event.comment.body }}"
+
+      - name: Use Comment Text
+        run: |
+          echo "Extracted Comment: ${{ steps.extract_comment.outputs.comment }}"
