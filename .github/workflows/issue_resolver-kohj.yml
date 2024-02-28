@@ -54,14 +54,18 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            // const issue_number = ${{ github.event.issue.number }};
-            const agentResponseStr = `${{ env.AGENT_RESPONSE }}`.replace(/'/g, "\\'");
-            // Correctly escape backslashes and newlines for JSON parsing
-            const escapedAgentResponseStr = agentResponseStr.replace(/\\n/g, "\\\\n");
-            const agentResponse = JSON.parse(escapedAgentResponseStr);
+            / const jsonString = `${{ toJson(env.AGENT_RESPONSE) }}`;
+            const agentResponse = JSON.parse(jsonString);
+            
+            // Use agentResponse as a JavaScript object
+            console.log(agentResponse); // Example usage
+            
+            // Assuming agentResponse has a 'message' property
+            const commentBody = `Response from API: ${agentResponse.message}`;
+            
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `${agentResponse.response}\n\nContext: ${agentResponse.context.join('\\n')}`
+              body: commentBody
             });
