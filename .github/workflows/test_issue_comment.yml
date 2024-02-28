@@ -26,7 +26,7 @@ jobs:
             echo "BODY=${{ github.event.comment.body }}" >> $GITHUB_ENV
           fi
 
-     -  name: Print Issue Information
+      - name: Print Issue Information
         run: |
           echo "Title: ${{ env.TITLE }}"
           echo "Body: ${{ env.BODY }}"
