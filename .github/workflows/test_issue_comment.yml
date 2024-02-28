@@ -27,7 +27,8 @@ jobs:
           fi
           echo "TITLE=$TITLE" >> $GITHUB_ENV
           echo "BODY=$BODY" >> $GITHUB_ENV
-          ISSUE_CONTENT="Title:$TITLEBody:$BODY"
+          ISSUE_CONTENT="Title:${TITLE}\nBody:${Body}"
+          ISSUE_CONTENT=$(echo -e $ISSUE_CONTENT | sed ':a;N;$!ba;s/\n/%0A/g')
           echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Print Issue Information
