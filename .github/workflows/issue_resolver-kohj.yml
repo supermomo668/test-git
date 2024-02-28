@@ -19,7 +19,7 @@ jobs:
           if [ "${{ github.event_name }}" == "issues" ]; then
             ISSUE_CONTENT="Title:${{ github.event.issue.title }}\nBody:${{ github.event.issue.body }}"
           elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            ISSUE_CONTENT="Title:${{ github.event.issue.title }\nBody:${{ github.event.comment.body }}"
+            ISSUE_CONTENT="Title:${{ github.event.issue.title }}\nBody:${{ github.event.comment.body }}"
           fi
           ISSUE_CONTENT="Title:${TITLE}\nBody:${Body}"
           ENCODED_ISSUE_CONTENT=$(jq -nr --arg v "$ISSUE_CONTENT" '$v|@uri')
