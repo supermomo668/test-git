@@ -1,0 +1,50 @@
+name: Issue Activity with Latest Comment
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  handle-issue-activity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Prepare comment or issue body for GET request
+        id: prepare_content
+        run: |
+          if [ "${{ github.event_name }}" == "issues" ]; then
+            # For new issues, use the issue body
+            content="${{ github.event.issue.body }}"
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            # For new issue comments, use the comment body
+            content="${{ github.event.comment.body }}"
+          fi
+          content_encoded=$(echo "$content" | jq -sRr @uri)
+          echo "::set-output name=content_encoded::$content_encoded"
+
+      - name: Send GET request including latest comment or issue body
+        id: send_request
+        run: |
+          baseURL="https://app.khoj.dev/api/"
+          # Append the encoded content as a parameter
+          url="https://app.khoj.dev/api/chat?q=/notes You are a code issue resolver for the GitHub Repository project. You will begin providing technical solutions to issues in the repository when an issue is provided. Provide the answer roughly in the following format:```The cause of the issue is likely to be {Cause of issue}.The suggested solution is the following {Suggested solution}.The relevant resources you may look into is: { Relevant Resources}. ```Leverage all the knowledge as much as possible including online information.The new GitHub Issue: ${{ steps.prepare_content.outputs.content_encoded }}&n=5&client=web&stream=false&conversation_id=4120&region=California&city=San%20Francisco&country=United%20States"
+          response=$(curl -s -X GET "$url" -H 'authority: app.khoj.dev' -H 'accept: */*' -H 'accept-language: en-US,en;q=0.9' -H 'cookie: ph_phc_kyJl5n4nibfibhTwixFnXzwVW9p70kzFdFRF2MrPtp7_posthog=%7B%22distinct_id%22%3A%22018dd738-8d31-793b-b772-32ec0bc978b0%22%2C%22%24device_id%22%3A%22018dd738-8d31-793b-b772-32ec0bc978b0%22%2C%22%24user_state%22%3A%22anonymous%22%2C%22%24sesid%22%3A%5B1709029296044%2C%22018dea05-e423-793e-8595-00f3b7271fa6%22%2C1709028271138%5D%2C%22%24client_session_props%22%3A%7B%22sessionId%22%3A%22018dea05-e423-793e-8595-00f3b7271fa6%22%2C%22props%22%3A%7B%22initialPathName%22%3A%22%2F%22%2C%22referringDomain%22%3A%22%24direct%22%7D%7D%2C%22%24session_recording_enabled_server_side%22%3Atrue%2C%22%24console_log_recording_enabled_server_side%22%3Atrue%2C%22%24session_recording_recorder_version_server_side%22%3A%22v2%22%2C%22%24session_recording_network_payload_capture%22%3A%7B%22capturePerformance%22%3Atrue%7D%2C%22%24autocapture_disabled_server_side%22%3Afalse%2C%22%24active_feature_flags%22%3A%5B%5D%2C%22%24enabled_feature_flags%22%3A%7B%7D%2C%22%24feature_flag_payloads%22%3A%7B%7D%7D; session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTE1NjM0ODk1ODExMjY5ODU4NTU2IiwgImVtYWlsIjogIm15bW0ucHN1QGdtYWlsLmNvbSIsICJlbWFpbF92ZXJpZmllZCI6IHRydWUsICJuYmYiOiAxNzA4NzEyNTAxLCAibmFtZSI6ICJNYXR0IE1ZIE1vIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmxFUXFKTlRFUTNSVE9ycFpvMjBOTE1iUG5Ta2t1Mnh4RTBreGlmU1ZZTGc9czk2LWMiLCAiZ2l2ZW5fbmFtZSI6ICJNYXR0IE1ZIiwgImZhbWlseV9uYW1lIjogIk1vIiwgImxvY2FsZSI6ICJlbiIsICJpYXQiOiAxNzA4NzEyODAxLCAiZXhwIjogMTcwODcxNjQwMSwgImp0aSI6ICJmNWNjOTljYjE4ZTY3Nzg5ODE1ODg0ZTkxYjdhNzhmOTQ3MGU1MDRjIn19.Zd236g.qxwxF3jhChjJHp4pau5EwZINbBA; session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTE1NjM0ODk1ODExMjY5ODU4NTU2IiwgImVtYWlsIjogIm15bW0ucHN1QGdtYWlsLmNvbSIsICJlbWFpbF92ZXJpZmllZCI6IHRydWUsICJuYmYiOiAxNzA4NzEyNTAxLCAibmFtZSI6ICJNYXR0IE1ZIE1vIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmxFUXFKTlRFUTNSVE9ycFpvMjBOTE1iUG5Ta2t1Mnh4RTBreGlmU1ZZTGc9czk2LWMiLCAiZ2l2ZW5fbmFtZSI6ICJNYXR0IE1ZIiwgImZhbWlseV9uYW1lIjogIk1vIiwgImxvY2FsZSI6ICJlbiIsICJpYXQiOiAxNzA4NzEyODAxLCAiZXhwIjogMTcwODcxNjQwMSwgImp0aSI6ICJmNWNjOTljYjE4ZTY3Nzg5ODE1ODg0ZTkxYjdhNzhmOTQ3MGU1MDRjIn19.Zd7SPQ.AqC6RdZk30GL7N8JVE2M8TcNanY' -H 'referer: https://app.khoj.dev/' -H 'sec-ch-ua: "Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"' -H 'sec-ch-ua-mobile: ?0' -H 'sec-ch-ua-platform: "Windows"' -H 'sec-fetch-dest: empty' -H 'sec-fetch-mode: cors' -H 'sec-fetch-site: same-origin' -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
+          echo "::set-output name=response::$response"
+
+      - name: Post response as issue comment
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issue_number = ${{ github.event.issue.number }};
+            const response = "${{ steps.send_request.outputs.response }}";
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: `Response from API: ${response}`
+            })
