@@ -19,13 +19,15 @@ jobs:
         id: extract_issue_info
         run: |
           if [ "${{ github.event_name }}" == "issues" ]; then
-            echo "TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
-            echo "BODY=${{ github.event.issue.body }}" >> $GITHUB_ENV
+            TITLE="${{ github.event.issue.title }}"
+            BODY="${{ github.event.issue.body }}"
           elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            echo "TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
-            echo "BODY=${{ github.event.comment.body }}" >> $GITHUB_ENV
+            TITLE="${{ github.event.issue.title }}"
+            BODY="${{ github.event.comment.body }}"
           fi
-          ISSUE_CONTENT="Title: ${{ env.TITLE }}\nBody: ${{ env.TITLE }}"
+          echo "TITLE=$TITLE" >> $GITHUB_ENV
+          echo "BODY=$BODY" >> $GITHUB_ENV
+          ISSUE_CONTENT="Title: $TITLE\nBody: $BODY"
           echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Print Issue Information
