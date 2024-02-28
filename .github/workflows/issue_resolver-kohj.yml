@@ -13,18 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Prepare comment or issue body for GET request
-        id: prepare_content
+      - name: Extract Issue Information
+        id: extract_issue_info
         run: |
           if [ "${{ github.event_name }}" == "issues" ]; then
-            # For new issues, use the issue body
-            content="${{ github.event.issue.body }}"
+            ISSUE_CONTENT="Title: ${{ github.event.issue.title }}\nBody: ${{ github.event.issue.body }}"
           elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            # For new issue comments, use the comment body
-            content="${{ github.event.comment.body }}"
+            ISSUE_CONTENT="Title: ${{ github.event.issue.title }}\nBody: ${{ github.event.comment.body }}"
           fi
-          content_encoded=$(echo "$content" | jq -sRr @uri)
-          echo "::set-output name=content_encoded::$content_encoded"
+          echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Send GET request including latest comment or issue body
         id: send_request
@@ -32,8 +29,22 @@ jobs:
           baseURL="https://app.khoj.dev/api/"
           # Append the encoded content as a parameter
           url="${baseURL}chat?q=%2Fnotes%20You%20are%20a%20code%20issue%20resolver%20for%20the%20GitHub%20Repository%20project.%20You%20will%20begin%20providing%20technical%20solutions%20to%20issues%20in%20the%20repository%20when%20an%20issue%20is%20provided.%20Provide%20the%20answer%20roughly%20in%20the%20following%20format%3A%60%60%60The%20cause%20of%20the%20issue%20is%20likely%20to%20be%20{Cause%20of%20issue}.The%20suggested%20solution%20is%20the%20following%20{Suggested%20solution}.The%20relevant%20resources%20you%20may%20look%20into%20is%3A%20{%20Relevant%20Resources}.%20%60%60%60Leverage%20all%20the%20knowledge%20as%20much%20as%20possible%20including%20online%20information.The%20new%20GitHub%20Issue%3A%20{{steps.trigger.event.issue.body}}&n=5&client=web&stream=false&conversation_id=4120&region=California&city=San%20Francisco&country=United%20States"
-          response=$(curl -s -X GET "$url" -H 'authority: app.khoj.dev' -H 'accept: */*' -H 'accept-language: en-US,en;q=0.9' -H 'cookie: ph_phc_kyJl5n4nibfibhTwixFnXzwVW9p70kzFdFRF2MrPtp7_posthog=%7B%22distinct_id%22%3A%22018dd738-8d31-793b-b772-32ec0bc978b0%22%2C%22%24device_id%22%3A%22018dd738-8d31-793b-b772-32ec0bc978b0%22%2C%22%24user_state%22%3A%22anonymous%22%2C%22%24sesid%22%3A%5B1709029296044%2C%22018dea05-e423-793e-8595-00f3b7271fa6%22%2C1709028271138%5D%2C%22%24client_session_props%22%3A%7B%22sessionId%22%3A%22018dea05-e423-793e-8595-00f3b7271fa6%22%2C%22props%22%3A%7B%22initialPathName%22%3A%22%2F%22%2C%22referringDomain%22%3A%22%24direct%22%7D%7D%2C%22%24session_recording_enabled_server_side%22%3Atrue%2C%22%24console_log_recording_enabled_server_side%22%3Atrue%2C%22%24session_recording_recorder_version_server_side%22%3A%22v2%22%2C%22%24session_recording_network_payload_capture%22%3A%7B%22capturePerformance%22%3Atrue%7D%2C%22%24autocapture_disabled_server_side%22%3Afalse%2C%22%24active_feature_flags%22%3A%5B%5D%2C%22%24enabled_feature_flags%22%3A%7B%7D%2C%22%24feature_flag_payloads%22%3A%7B%7D%7D; session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTE1NjM0ODk1ODExMjY5ODU4NTU2IiwgImVtYWlsIjogIm15bW0ucHN1QGdtYWlsLmNvbSIsICJlbWFpbF92ZXJpZmllZCI6IHRydWUsICJuYmYiOiAxNzA4NzEyNTAxLCAibmFtZSI6ICJNYXR0IE1ZIE1vIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmxFUXFKTlRFUTNSVE9ycFpvMjBOTE1iUG5Ta2t1Mnh4RTBreGlmU1ZZTGc9czk2LWMiLCAiZ2l2ZW5fbmFtZSI6ICJNYXR0IE1ZIiwgImZhbWlseV9uYW1lIjogIk1vIiwgImxvY2FsZSI6ICJlbiIsICJpYXQiOiAxNzA4NzEyODAxLCAiZXhwIjogMTcwODcxNjQwMSwgImp0aSI6ICJmNWNjOTljYjE4ZTY3Nzg5ODE1ODg0ZTkxYjdhNzhmOTQ3MGU1MDRjIn19.Zd236g.qxwxF3jhChjJHp4pau5EwZINbBA; session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTE1NjM0ODk1ODExMjY5ODU4NTU2IiwgImVtYWlsIjogIm15bW0ucHN1QGdtYWlsLmNvbSIsICJlbWFpbF92ZXJpZmllZCI6IHRydWUsICJuYmYiOiAxNzA4NzEyNTAxLCAibmFtZSI6ICJNYXR0IE1ZIE1vIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmxFUXFKTlRFUTNSVE9ycFpvMjBOTE1iUG5Ta2t1Mnh4RTBreGlmU1ZZTGc9czk2LWMiLCAiZ2l2ZW5fbmFtZSI6ICJNYXR0IE1ZIiwgImZhbWlseV9uYW1lIjogIk1vIiwgImxvY2FsZSI6ICJlbiIsICJpYXQiOiAxNzA4NzEyODAxLCAiZXhwIjogMTcwODcxNjQwMSwgImp0aSI6ICJmNWNjOTljYjE4ZTY3Nzg5ODE1ODg0ZTkxYjdhNzhmOTQ3MGU1MDRjIn19.Zd7SPQ.AqC6RdZk30GL7N8JVE2M8TcNanY' -H 'referer: https://app.khoj.dev/' -H 'sec-ch-ua: "Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"' -H 'sec-ch-ua-mobile: ?0' -H 'sec-ch-ua-platform: "Windows"' -H 'sec-fetch-dest: empty' -H 'sec-fetch-mode: cors' -H 'sec-fetch-site: same-origin' -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
-          echo "::set-output name=response::$response"
+          response=$(curl -s -X GET "$url" \
+            --header 'authority: app.khoj.dev' \
+            --header 'accept: */*' \
+            --header 'accept-language: en-US,en;q=0.9' \
+            --header 'cookie: ph_phc_kyJl5n4nibfibhTwixFnXzwVW9p70kzFdFRF2MrPtp7_posthog=%7B%22distinct_id%22%3A%22018dd738-8d31-793b-b772-32ec0bc978b0%22%2C%22%24device_id%22%3A%22018dd738-8d31-793b-b772-32ec0bc978b0%22%2C%22%24user_state%22%3A%22anonymous%22%2C%22%24sesid%22%3A%5B1709029296044%2C%22018dea05-e423-793e-8595-00f3b7271fa6%22%2C1709028271138%5D%2C%22%24client_session_props%22%3A%7B%22sessionId%22%3A%22018dea05-e423-793e-8595-00f3b7271fa6%22%2C%22props%22%3A%7B%22initialPathName%22%3A%22%2F%22%2C%22referringDomain%22%3A%22%24direct%22%7D%7D%2C%22%24session_recording_enabled_server_side%22%3Atrue%2C%22%24console_log_recording_enabled_server_side%22%3Atrue%2C%22%24session_recording_recorder_version_server_side%22%3A%22v2%22%2C%22%24session_recording_network_payload_capture%22%3A%7B%22capturePerformance%22%3Atrue%7D%2C%22%24autocapture_disabled_server_side%22%3Afalse%2C%22%24active_feature_flags%22%3A%5B%5D%2C%22%24enabled_feature_flags%22%3A%7B%7D%2C%22%24feature_flag_payloads%22%3A%7B%7D%7D; session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTE1NjM0ODk1ODExMjY5ODU4NTU2IiwgImVtYWlsIjogIm15bW0ucHN1QGdtYWlsLmNvbSIsICJlbWFpbF92ZXJpZmllZCI6IHRydWUsICJuYmYiOiAxNzA4NzEyNTAxLCAibmFtZSI6ICJNYXR0IE1ZIE1vIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmxFUXFKTlRFUTNSVE9ycFpvMjBOTE1iUG5Ta2t1Mnh4RTBreGlmU1ZZTGc9czk2LWMiLCAiZ2l2ZW5fbmFtZSI6ICJNYXR0IE1ZIiwgImZhbWlseV9uYW1lIjogIk1vIiwgImxvY2FsZSI6ICJlbiIsICJpYXQiOiAxNzA4NzEyODAxLCAiZXhwIjogMTcwODcxNjQwMSwgImp0aSI6ICJmNWNjOTljYjE4ZTY3Nzg5ODE1ODg0ZTkxYjdhNzhmOTQ3MGU1MDRjIn19.Zd236g.qxwxF3jhChjJHp4pau5EwZINbBA' \
+            --header 'referer: https://app.khoj.dev/' \
+            --header 'sec-ch-ua: "Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"' \
+            --header 'sec-ch-ua-mobile: ?0' \
+            --header 'sec-ch-ua-platform: "Windows"' \
+            --header 'sec-fetch-dest: empty' \
+            --header 'sec-fetch-mode: cors' \
+            --header 'sec-fetch-site: same-origin' \
+            --header 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+          )
+          echo "AGENT_RESPONSE=$AGENT_RESPONSE" >> $GITHUB_ENV
+          
 
       - name: Post response as issue comment
         uses: actions/github-script@v5
@@ -41,10 +52,9 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const issue_number = ${{ github.event.issue.number }};
-            const response = "${{ steps.send_request.outputs.response }}";
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number,
-              body: `Response from API: ${response}`
+              body: `Response from API: ${{ env.AGENT_RESPONSE }}`
             })

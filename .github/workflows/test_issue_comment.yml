@@ -25,8 +25,11 @@ jobs:
             echo "TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
             echo "BODY=${{ github.event.comment.body }}" >> $GITHUB_ENV
           fi
+          ISSUE_CONTENT="Title: ${{ env.TITLE }}\nBody: ${{ env.TITLE }}"
+          echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Print Issue Information
         run: |
           echo "Title: ${{ env.TITLE }}"
           echo "Body: ${{ env.BODY }}"
+          echo "Issue: ${{ env.ISSUE_CONTENT }}"
