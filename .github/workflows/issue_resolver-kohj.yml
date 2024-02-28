@@ -15,8 +15,16 @@ jobs:
 
       - name: Prepare comment or issue body for GET request
         id: prepare_content
-        run: echo "::set-output name=comment::${{ github.event.comment.body }}"
-
+        run: |
+          if [ "${{ github.event_name }}" == "issues" ]; then
+            # For new issues, use the issue body
+            content="${{ github.event.issue.body }}"
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            # For new issue comments, use the comment body
+            content="${{ github.event.comment.body }}"
+          fi
+          content_encoded=$(echo "$content" | jq -sRr @uri)
+          echo "::set-output name=content_encoded::$content_encoded"
 
       - name: Send GET request including latest comment or issue body
         id: send_request

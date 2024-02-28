@@ -15,19 +15,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Extract Issue Information
-        id: extract_info
-        run: |
-          # Check if the event is triggered by a new issue or a new comment
-          if [ "${{ github.event_name }}" == "issues" ]; then
-            title=$(jq -r '.issue.title' <<< "${{ toJson(github.event.issue) }}")
-            body=$(jq -r '.issue.body' <<< "${{ toJson(github.event.issue) }}")
-          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            title=$(jq -r '.issue.title' <<< "${{ toJson(github.event.issue) }}")
-            body=$(jq -r '.comment.body' <<< "${{ toJson(github.event.comment) }}")
-          fi
-          echo "::set-output name=title::$title"
-          echo "::set-output name=body::$body"
+    - name: Extract Issue Information
+      id: extract_info
+      run: |
+        # Check if the event is triggered by a new issue or a new comment
+        if [ "${{ github.event_name }}" == "issues" ]; then
+          title=$(jq -r '.issue.title' <<< '
+            {
+              "title": "${{ github.event.issue.title }}",
+              "body": "${{ github.event.issue.body }}"
+            }')
+        elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+          title=$(jq -r '.issue.title' <<< '
+            {
+              "title": "${{ github.event.issue.title }}",
+              "body": "${{ github.event.comment.body }}"
+            }')
+        fi
+        echo "::set-output name=title::$title"
+
 
       - name: Print Issue Information
         run: |
