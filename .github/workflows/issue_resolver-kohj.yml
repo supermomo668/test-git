@@ -22,15 +22,15 @@ jobs:
             ISSUE_CONTENT="Title:${{ github.event.issue.title }Body:${{ github.event.comment.body }}"
           fi
           ISSUE_CONTENT="Title:${TITLE}\nBody:${Body}"
-          ISSUE_CONTENT=$(echo -e $ISSUE_CONTENT | sed ':a;N;$!ba;s/\n/%0A/g')
+          ENCODED_ISSUE_CONTENT=$(jq -nr --arg v $ISSUE_CONTENT '$v|@uri')
           echo $ISSUE_CONTENT
-          echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
+          echo "ENCODED_ISSUE_CONTENT=$ENCODED_ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Send GET request including latest comment or issue body
         id: send_request
         run: |
           baseURL="https://app.khoj.dev/api/"
-          ENCODED_QUERY_PARAM=$(jq -nr --arg v "{{ env.ISSUE_CONTENT }}" '$v|@uri')
+          ENCODED_QUERY_PARAM="{{ env.ENCODED_ISSUE_CONTENT}}"
           url="${baseURL}chat?q=%2Fnotes%20You%20are%20a%20code%20issue%20resolver%20for%20the%20GitHub%20Repository%20project.%20You%20will%20begin%20providing%20technical%20solutions%20to%20issues%20in%20the%20repository%20when%20an%20issue%20is%20provided.%20Provide%20the%20answer%20roughly%20in%20the%20following%20format%3A%60%60%60The%20cause%20of%20the%20issue%20is%20likely%20to%20be%20{Cause%20of%20issue}.The%20suggested%20solution%20is%20the%20following%20{Suggested%20solution}.The%20relevant%20resources%20you%20may%20look%20into%20is%3A%20{%20Relevant%20Resources}.%20%60%60%60Leverage%20all%20the%20knowledge%20as%20much%20as%20possible%20including%20online%20information.The%20new%20GitHub%20Issue%3A%20$ENCODED_QUERY_PARAM&n=5&client=web&stream=false&conversation_id=4120&region=California&city=San%20Francisco&country=United%20States"
           response=$(curl -s -X GET "$url" \
             --header 'authority: app.khoj.dev' \
