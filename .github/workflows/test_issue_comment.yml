@@ -16,26 +16,18 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Extract Issue Information
-        id: extract_info
+        id: extract_issue_info
         run: |
-          # Check if the event is triggered by a new issue or a new comment
           if [ "${{ github.event_name }}" == "issues" ]; then
-            title=$(jq -r '.issue.title' <<< '
-              {
-                "title": "${{ github.event.issue.title }}",
-                "body": "${{ github.event.issue.body }}"
-              }')
+            echo "TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
+            echo "BODY=${{ github.event.issue.body }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "issue_comment" ]; then
-            title=$(jq -r '.issue.title' <<< '
-              {
-                "title": "${{ github.event.issue.title }}",
-                "body": "${{ github.event.comment.body }}"
-              }')
+            echo "TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
+            echo "BODY=${{ github.event.comment.body }}" >> $GITHUB_ENV
           fi
-          echo "::set-output name=title::$title"
 
 
-      - name: Print Issue Information
+     -  name: Print Issue Information
         run: |
-          echo "Title: ${{ steps.extract_info.outputs.title }}"
-          echo "Body: ${{ steps.extract_info.outputs.body }}"
+          echo "Title: ${{ env.TITLE }}"
+          echo "Body: ${{ env.BODY }}"
