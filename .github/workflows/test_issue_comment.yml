@@ -7,8 +7,8 @@ on:
     types: [created]
 
 jobs:
-  extract-issue-info:
-    name: Extract Issue Information
+  show-issue-info:
+    name: Show Issue Information
     runs-on: ubuntu-latest
 
     steps:
