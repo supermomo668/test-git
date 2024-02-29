@@ -46,45 +46,44 @@ jobs:
             --header "sec-fetch-site: same-origin" \
             --header "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" \
           )
-          echo "AGENT_RESPONSE=$AGENT_RESPONSE" >> $GITHUB_ENV
+          # AGENT_RESPONSE=$(echo $AGENT_RESPONSE | jq @json)  # Only use this for escape string
+          AGENT_RESPONSE=$(echo "$AGENT_RESPONSE" | jq -r '"\(.response)\nContext:\n\(.context | join("\n"))"')
+          echo "AGENT_RESPONSE<<EOF" >> $GITHUB_ENV
+          echo "${AGENT_RESPONSE}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           
-      # - name: Post GitHub Comment
-      #   uses: actions/github-script@v5
-      #   with:
-      #     github-token: ${{secrets.GITHUB_TOKEN}}
-      #     script: |
-      #       const issueNumber = parseInt('${{ github.event.inputs.issueNumber }}', 10);
-      #       const commentBody = "This is a comment made by a script 🤖";
-            
-      #       console.log("Owner:"+context.repo.owner+"\nRepo:"+context.repo.repo+"")
-            
-      #       await github.rest.issues.createComment({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         issue_number: issueNumber,
-      #         body: commentBody,
-      #       });
-            
-      #       console.log("Comment posted successfully.");
-
-      - name: Parse AGENT_RESPONSE
-        id: parse_response
-        run: |
-          echo "FORMATTED_AGENT_RESPONSE=$(echo '${{ env.AGENT_RESPONSE }}' | jq -r '.response as $response | .context as $context | "Title: \($response)\nContext:\($context | join("\\n"))"')" >> $GITHUB_ENV
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Post GitHub Comment
+        uses: actions/github-script@v5
         with:
-          node-version: '14'
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueNumber = parseInt('${{ github.event.inputs.issueNumber }}', 10);
+            const commentBody = "This is a comment made by a script 🤖";
+            
+            console.log("Owner:"+context.repo.owner+"\nRepo:"+context.repo.repo+"")
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: commentBody,
+            });
+            
+            console.log("Comment posted successfully.");
 
-      - name: Install dependencies
-        run: npm install @octokit/rest
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: '14'
 
-      - name: Post comment
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          ISSUE_NUMBER: ${{ github.event.inputs.issueNumber }}
-          AGENT_RESPONSE: ${{ env.FORMATTED_AGENT_RESPONSE }}
-        run: |
-          node ./scripts/khoj_agent_commenter.js
+      # - name: Install dependencies
+      #   run: npm install @octokit/rest
+
+      # - name: Post comment
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     GITHUB_REPOSITORY: ${{ github.repository }}
+      #     ISSUE_NUMBER: ${{ github.event.inputs.issueNumber }}
+      #     AGENT_RESPONSE: ${{ env.FORMATTED_AGENT_RESPONSE }}
+      #   run: |
+      #     node ./scripts/khoj_agent_commenter.js
