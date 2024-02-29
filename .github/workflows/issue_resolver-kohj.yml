@@ -46,7 +46,9 @@ jobs:
             --header "sec-fetch-site: same-origin" \
             --header "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" \
           )
-          echo "AGENT_RESPONSE=$AGENT_RESPONSE" >> $GITHUB_ENV
+          AGENT_RESPONSE_JSON='${{ toJson(env.AGENT_RESPONSE) }}'
+          FINAL_AGENT_RESPONSE=$(echo $AGENT_RESPONSE_JSON | jq -r '.response as $response | .context as $context | "Title: \($response)\nContext:\($context | join("\\n"))"')
+          echo "AGENT_RESPONSE=$FINAL_AGENT_RESPONSE" >> $GITHUB_ENV
           
       # - name: Post GitHub Comment
       #   uses: actions/github-script@v5
@@ -80,5 +82,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.inputs.issueNumber }}
+          AGENT_RESPONSE: ${{ env.FINAL_AGENT_RESPONSE }}
         run: |
           node ./scripts/khoj_agent_commenter.js
