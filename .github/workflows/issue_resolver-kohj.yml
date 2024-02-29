@@ -81,4 +81,4 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.inputs.issueNumber }}
         run: |
-          node ./scripts/post_comment.js
+          node ./scripts/khoj_agent_commenter
