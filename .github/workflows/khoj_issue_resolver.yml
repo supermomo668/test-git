@@ -74,6 +74,7 @@ jobs:
         uses: actions/github-script@v6
         env:
           ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}
+          AGENT_RESPONSE: ${{ env.AGENT_RESPONSE }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -84,7 +85,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: parseInt(
                 process.env.ISSUE_NUMBER, 10),
-              body: `${{ env.AGENT_RESPONSE }}`,
+              body: process.env.AGENT_RESPONSE,
             });
             
             console.log("Comment posted successfully.");
