@@ -1,5 +1,9 @@
 const { Octokit } = require("@octokit/rest");
 
+// process.env.GITHUB_TOKEN = 'github_pat_xxx';
+// process.env.GITHUB_REPOSITORY = 'FDA-AI/FDAi';
+// process.env.ISSUE_NUMBER = '1';
+
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 async function postComment(owner, repo, issue_number, body) {
