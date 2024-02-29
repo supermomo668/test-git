@@ -82,6 +82,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.inputs.issueNumber }}
-          AGENT_RESPONSE: ${{ env.FINAL_AGENT_RESPONSE }}
+          AGENT_RESPONSE: ${{ env.AGENT_RESPONSE }}
         run: |
           node ./scripts/khoj_agent_commenter.js
