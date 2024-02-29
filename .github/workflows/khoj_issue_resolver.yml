@@ -71,11 +71,13 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
           
       - name: Post GitHub Comment
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
+        env:
+          ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const issueNumber = parseInt('${{ github.event.inputs.issueNumber }}', 10);
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
             const commentBody = "This is a comment made by a script 🤖";
             
             console.log("Owner:"+context.repo.owner+"\nRepo:"+context.repo.repo+"")
