@@ -9,7 +9,8 @@ on:
     inputs:
       issueNumber:
         description: 'Issue Number'
-        required: true
+        required: false
+        default: ''
 
 jobs:
   handle-issue-activity:

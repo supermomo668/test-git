@@ -1,10 +1,10 @@
 name: Test Khoj Response
 
-on:
-  # issues:
-  #   types: [opened]
-  # issue_comment:
-  #   types: [created]
+# on:
+#   issues:
+#     types: [opened]
+#   issue_comment:
+#     types: [created]
 
 jobs:
   test-khoj-response:
