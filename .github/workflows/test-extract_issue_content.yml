@@ -11,10 +11,15 @@ on:
 
 jobs:
   test-issue-comment:
+  if: github.actor != 'github-actions[bot]' # Prevent self-triggering
     name: Show Issue Information
     runs-on: ubuntu-latest
-
+    env:
+      EXCLUDED_ACTOR: github-actions[bot] # Define the excluded actor in the env section
     steps:
+      - name: Check actor
+        run: echo "Triggered by ${{ github.actor }}, excluding $EXCLUDED_ACTOR"
+        
       - name: Checkout repository
         uses: actions/checkout@v2
         

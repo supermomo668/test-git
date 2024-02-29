@@ -29,6 +29,7 @@ jobs:
           echo "ISSUE_NUMBER=${{ github.event.inputs.issueNumber }}" >> $GITHUB_ENV
         
       - name: Extract Issue Information
+        if: github.actor != env.EXCLUDED_ACTOR
         id: extract_issue_info
         run: |
           if [ "${{ github.event_name }}" == "issues" ]; then
@@ -42,6 +43,7 @@ jobs:
           echo "ENCODED_ISSUE_CONTENT=$ENCODED_ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Send GET request including latest comment or issue body
+        if: github.actor != env.EXCLUDED_ACTOR
         id: send_request
         run: |
           baseURL="https://app.khoj.dev/api/"
@@ -68,6 +70,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
           
       - name: Post GitHub Comment
+        if: github.actor != env.EXCLUDED_ACTOR
         uses: actions/github-script@v6
         env:
           ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}

@@ -6,7 +6,11 @@ on:
 jobs:
   test-khoj-response:
     runs-on: ubuntu-latest
+    env:
+      EXCLUDED_ACTOR: github-actions[bot] # Define the excluded actor in the env section
     steps:
+      - name: Check actor
+        run: echo "Triggered by ${{ github.actor }}, excluding $EXCLUDED_ACTOR"
       - name: Checkout code
         uses: actions/checkout@v2
 
