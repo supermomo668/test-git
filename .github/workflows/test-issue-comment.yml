@@ -5,16 +5,25 @@ on:
     types: [opened, edited]
   issue_comment:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      issueNumber:
+        description: 'Issue Number'
+        required: true
 
 jobs:
-  show-issue-info:
+  test-issue-comment:
     name: Show Issue Information
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
+        
+      - name: Echo issue number
+        run: |
+          echo "Issue Number: ${{ github.event.inputs.issueNumber }}"
+        
       - name: Extract Issue Information
         id: extract_issue_info
         run: |
