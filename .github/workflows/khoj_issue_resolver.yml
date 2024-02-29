@@ -19,9 +19,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         
-      - name: Echo issue number
+      - name: Set issue number for issues and issue_comment events
+        if: ${{ github.event_name == 'issues' || github.event_name == 'issue_comment' }}
         run: |
-          echo "Issue Number: ${{ github.event.inputs.issueNumber }}"
+          echo "ISSUE_NUMBER:${{ github.event.issue.number }}"
+          echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+      
+      - name: Set issue number for workflow_dispatch event
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "ISSUE_NUMBER:${{ github.event.inputs.issueNumber }}"
+          echo "ISSUE_NUMBER=${{ github.event.inputs.issueNumber }}" >> $GITHUB_ENV
         
       - name: Extract Issue Information
         id: extract_issue_info
