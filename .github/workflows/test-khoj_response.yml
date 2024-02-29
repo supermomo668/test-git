@@ -2,10 +2,6 @@ name: Test Khoj API Response
 
 on: 
   workflow_dispatch:
-#   issues:
-#     types: [opened]
-#   issue_comment:
-#     types: [created]
 
 jobs:
   test-khoj-response:

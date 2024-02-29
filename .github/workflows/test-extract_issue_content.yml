@@ -1,8 +1,11 @@
 name: Test Pull Issue Content and Post Comments
 
+permissions:
+  issues: write
+  
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
   issue_comment:
     types: [created]
 
@@ -39,11 +42,16 @@ jobs:
           fi
           TITLE=$(echo -e $TITLE | sed ':a;N;$!ba;s/\n/%0A/g')
           BODY=$(echo -e $BODY | sed ':a;N;$!ba;s/\n/%0A/g')
+          
           echo "TITLE=$TITLE" >> $GITHUB_ENV
-          echo "BODY=$BODY" >> $GITHUB_ENV
+          echo "BODY<<EOF" >> $GITHUB_ENV
+          echo "${BODY}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
           ISSUE_CONTENT="Title:${TITLE}\nBody:${Body}"
-          ISSUE_CONTENT=$(echo -e $ISSUE_CONTENT | sed ':a;N;$!ba;s/\n/%0A/g')
-          echo "ISSUE_CONTENT=$ISSUE_CONTENT" >> $GITHUB_ENV
+          echo "ISSUE_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "${ISSUE_CONTENT}" >> $GITHUB_ENV
+          echo "ISSUE_CONTENT" >> $GITHUB_ENV
 
       - name: Print Issue Information
         run: |
