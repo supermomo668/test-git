@@ -1,4 +1,4 @@
-name: Test Khoj Response
+name: Test Khoj API Response
 
 on: 
   workflow_dispatch:

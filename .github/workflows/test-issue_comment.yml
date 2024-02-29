@@ -1,4 +1,4 @@
-name: Issue and Comment Monitor
+name: Test Pull Issue Content and Post Comments
 
 on:
   issues:

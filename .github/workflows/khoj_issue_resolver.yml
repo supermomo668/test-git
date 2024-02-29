@@ -1,4 +1,4 @@
-name: Issue Activity with Latest Comment
+name: Khoj Issue Commenter
 
 on:
   issues:
