@@ -10,12 +10,12 @@ on:
     types: [created]
 
 env:
-  BASE_URL: "https://app.khoj.dev/api/"
-  QUERY_PARAM: "chat?q=%2Fnotes%20You%20are%20a%20code%20issue%20resolver%20for%20the%20FDAi%20GitHub%20project.%20You%20will%20begin%20providing%20technical%20solutions%20to%20issues%20in%20the%20repository%20when%20an%20issue%20is%20provided.%20Provide%20the%20answer%20roughly%20in%20the%20following%20format%3A%60%60%60The%20cause%20of%20the%20issue%20is%20likely%20to%20be%20{Cause%20of%20issue}.The%20suggested%20solution%20is%20the%20following%20{Suggested%20solution}.The%20relevant%20resources%20you%20may%20look%20into%20is%3A%20{%20Relevant%20Resources}.%20%60%60%60Leverage%20all%20the%20knowledge%20as%20much%20as%20possible%20including%20online%20information.The%20new%20GitHub%20Issue%20is%20as%20follows%3A"
-  GET_REQUEST_SCRIPT: '.github/scripts/sendGETRequest.sh'
+  KHOJ_BASE_URL: "https://app.khoj.dev/api/"
+  KHOJ_ISSUE_QUERY_PARAM: "chat?n=5&client=web&stream=true&conversation_id=5291&region=California&city=San%20Francisco&country=United%20States&q="
+  GET_REQUEST_SCRIPT: '.github/scripts/sendGETRequest.py'
   
 jobs:
-  handle-issue-activity:
+  handle-issue-activity2:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -50,9 +50,11 @@ jobs:
       - name: Send GET request using external script
         if: github.actor != env.EXCLUDED_ACTOR
         run: |
+          pip install -U requests
           chmod +x "${{ env.GET_REQUEST_SCRIPT }}"
-          AGENT_RESPONSE=$(bash ${{ env.GET_REQUEST_SCRIPT }} "${{ env.BASE_URL }}${{ env.QUERY_PARAM }}" "${{ secrets.ENCODED_HEADERS }}")
-          AGENT_RESPONSE=$(echo "$AGENT_RESPONSE" | jq -r '"\(.response)\nContext:\n\(.context | join("\n"))"')
+          KHOJ_HEADERS=$(echo -n "${{ secrets.KHOJ_ENCODED_HEADER }}" | base64 --decode)
+          AGENT_RESPONSE=$(python ${{ env.GET_REQUEST_SCRIPT }} "${{ env.KHOJ_BASE_URL }}" "${{ env.KHOJ_ISSUE_QUERY_PARAM }}" "${{ env.ENCODED_ISSUE_CONTENT}}" $KHOJ_HEADERS)
+          
           echo "AGENT_RESPONSE<<EOF" >> $GITHUB_ENV
           echo "${AGENT_RESPONSE}" >> $GITHUB_ENV
           echo "EOF"

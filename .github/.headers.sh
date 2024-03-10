@@ -1,0 +1,18 @@
+# Concatenate headers with a newline character
+HEADERS="authority: app.khoj.dev
+accept: */*
+accept-language: en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7
+cookie: session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTA0Mzk0MzQ4OTcyMjM4ODk1NjY2IiwgImVtYWlsIjogIm15bW9tbzExOTk2Ni5tbUBnbWFpbC5jb20iLCAiZW1haWxfdmVyaWZpZWQiOiB0cnVlLCAibmJmIjogMTcwOTE1OTE1MiwgIm5hbWUiOiAiTWF0dCBNIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2owaHhfUkFYVFJvc1NPYkc3b2pRVFhTSHRoWFJoWUxBd1d3dkdqaWpHR0NfdD1zOTYtYyIsICJnaXZlbl9uYW1lIjogIk1hdHQiLCAiZmFtaWx5X25hbWUiOiAiTSIsICJsb2NhbGUiOiAiZW4iLCAiaWF0IjogMTcwOTE1OTQ1MiwgImV4cCI6IDE3MDkxNjMwNTIsICJqdGkiOiAiNWZiMDYzNTZiMWE0ODBlNTFiZTllNDYxODYxYjdmNDY1Mjk4YTBlNyJ9fQ==.Ze0xBg.Qlt_4SOI2M5--fms9Kw4yXTfW0s; session=eyJ1c2VyIjogeyJpc3MiOiAiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwgImF6cCI6ICI1NzY4NjE0NTk3ODgtMWF0cmZpZjhwM3Mxa2h0bDhwZGs2azNrOXI2MzA5cWYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiYXVkIjogIjU3Njg2MTQ1OTc4OC0xYXRyZmlmOHAzczFraHRsOHBkazZrM2s5cjYzMDlxZi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsICJzdWIiOiAiMTE1NjM0ODk1ODExMjY5ODU4NTU2IiwgImVtYWlsIjogIm15bW0ucHN1QGdtYWlsLmNvbSIsICJlbWFpbF92ZXJpZmllZCI6IHRydWUsICJuYmYiOiAxNzA4NzEyNTAxLCAibmFtZSI6ICJNYXR0IE1ZIE1vIiwgInBpY3R1cmUiOiAiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSmxFUXFKTlRFUTNSVE9ycFpvMjBOTE1iUG5Ta2t1Mnh4RTBreGlmU1ZZTGc9czk2LWMiLCAiZ2l2ZW5fbmFtZSI6ICJNYXR0IE1ZIiwgImZhbWlseV9uYW1lIjogIk1vIiwgImxvY2FsZSI6ICJlbiIsICJpYXQiOiAxNzA4NzEyODAxLCAiZXhwIjogMTcwODcxNjQwMSwgImp0aSI6ICJmNWNjOTljYjE4ZTY3Nzg5ODE1ODg0ZTkxYjdhNzhmOTQ3MGU1MDRjIn19.Ze24Zw.wcjHtAuqBuQ_S-9Vk7pKXwjd04E
+referrer: https://app.khoj.dev/chat
+sec-ch-ua: \"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: \"Windows\"
+sec-fetch-dest: empty
+sec-fetch-mode: cors
+sec-fetch-site: same-origin
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+
+# Encode headers to base64
+ENCODED_HEADERS=$(echo -n "$HEADERS" | base64 | tr -d '\n')
+
+echo "KHOJ_HEADERS_ENCODED=$ENCODED_HEADERS"  > .github/.secret
