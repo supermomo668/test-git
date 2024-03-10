@@ -3,11 +3,12 @@ name: Khoj Issue Commenter
 permissions:
   issues: write
   
-on:
-  issues:
-    types: [opened]
-  issue_comment:
-    types: [created]
+on: 
+  workflow_dispatch:
+
+env:
+  BASE_URL: https://app.khoj.dev/api/
+
 
 jobs:
   handle-issue-activity:

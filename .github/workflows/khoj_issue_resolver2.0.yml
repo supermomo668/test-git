@@ -1,0 +1,80 @@
+name: Khoj Issue Commenter
+
+permissions:
+  issues: write
+  
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+env:
+  BASE_URL: "https://app.khoj.dev/api/"
+  QUERY_PARAM: "chat?q=%2Fnotes%20You%20are%20a%20code%20issue%20resolver%20for%20the%20FDAi%20GitHub%20project.%20You%20will%20begin%20providing%20technical%20solutions%20to%20issues%20in%20the%20repository%20when%20an%20issue%20is%20provided.%20Provide%20the%20answer%20roughly%20in%20the%20following%20format%3A%60%60%60The%20cause%20of%20the%20issue%20is%20likely%20to%20be%20{Cause%20of%20issue}.The%20suggested%20solution%20is%20the%20following%20{Suggested%20solution}.The%20relevant%20resources%20you%20may%20look%20into%20is%3A%20{%20Relevant%20Resources}.%20%60%60%60Leverage%20all%20the%20knowledge%20as%20much%20as%20possible%20including%20online%20information.The%20new%20GitHub%20Issue%20is%20as%20follows%3A"
+  GET_REQUEST_SCRIPT: '.github/scripts/sendGETRequest.sh'
+  
+jobs:
+  handle-issue-activity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Set issue number for issues and issue_comment events
+        if: ${{ github.event_name == 'issues' || github.event_name == 'issue_comment' }}
+        run: |
+          echo "ISSUE_NUMBER:${{ github.event.issue.number }}"
+          echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+      
+      - name: Set issue number for workflow_dispatch event
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "ISSUE_NUMBER:${{ github.event.inputs.issueNumber }}"
+          echo "ISSUE_NUMBER=${{ github.event.inputs.issueNumber }}" >> $GITHUB_ENV
+        
+      - name: Extract Issue Information
+        if: github.actor != env.EXCLUDED_ACTOR
+        id: extract_issue_info
+        run: |
+          if [ "${{ github.event_name }}" == "issues" ]; then
+            ISSUE_CONTENT="Title:${{ github.event.issue.title }}\nBody:${{ github.event.issue.body }}"
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            ISSUE_CONTENT="Title:${{ github.event.issue.title }}\nBody:${{ github.event.comment.body }}"
+          fi
+          ISSUE_CONTENT="Title:${TITLE}\nBody:${Body}"
+          ENCODED_ISSUE_CONTENT=$(jq -nr --arg v "$ISSUE_CONTENT" '$v|@uri')
+          echo $ISSUE_CONTENT
+          echo "ENCODED_ISSUE_CONTENT=$ENCODED_ISSUE_CONTENT" >> $GITHUB_ENV
+
+      - name: Send GET request using external script
+        if: github.actor != env.EXCLUDED_ACTOR
+        run: |
+          chmod +x "${{ env.GET_REQUEST_SCRIPT }}"
+          AGENT_RESPONSE=$(bash ${{ env.SCRIPT_PATH }} "${{ env.BASE_URL }}${{ env.QUERY_PARAM }}" "${{ secrets.ENCODED_HEADERS }}")
+          AGENT_RESPONSE=$(echo "$AGENT_RESPONSE" | jq -r '"\(.response)\nContext:\n\(.context | join("\n"))"')
+          echo "AGENT_RESPONSE<<EOF" >> $GITHUB_ENV
+          echo "${AGENT_RESPONSE}" >> $GITHUB_ENV
+          echo "EOF"
+        id: send_khoj_request
+
+      - name: Post GitHub Comment
+        if: github.actor != env.EXCLUDED_ACTOR
+        uses: actions/github-script@v6
+        env:
+          ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}
+          AGENT_RESPONSE: ${{ env.AGENT_RESPONSE }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            console.log("Owner:"+context.repo.owner+"\nRepo:"+context.repo.repo+"");
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(
+                process.env.ISSUE_NUMBER, 10),
+              body: process.env.AGENT_RESPONSE,
+            });
+            
+            console.log("Comment posted successfully.");
