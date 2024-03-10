@@ -51,7 +51,7 @@ jobs:
         if: github.actor != env.EXCLUDED_ACTOR
         run: |
           chmod +x "${{ env.GET_REQUEST_SCRIPT }}"
-          AGENT_RESPONSE=$(bash ${{ env.SCRIPT_PATH }} "${{ env.BASE_URL }}${{ env.QUERY_PARAM }}" "${{ secrets.ENCODED_HEADERS }}")
+          AGENT_RESPONSE=$(bash ${{ env.GET_REQUEST_SCRIPT }} "${{ env.BASE_URL }}${{ env.QUERY_PARAM }}" "${{ secrets.ENCODED_HEADERS }}")
           AGENT_RESPONSE=$(echo "$AGENT_RESPONSE" | jq -r '"\(.response)\nContext:\n\(.context | join("\n"))"')
           echo "AGENT_RESPONSE<<EOF" >> $GITHUB_ENV
           echo "${AGENT_RESPONSE}" >> $GITHUB_ENV
